@@ -243,7 +243,11 @@ if __name__ == "__main__":
     parser.add_argument("--database-url", type=str, default=None)
 
     parser.add_argument(
-        "-o", type=str, nargs="+", default=[], dest="overrides",
+        "-o",
+        type=str,
+        nargs="+",
+        default=[],
+        dest="overrides",
     )
 
     args = vars(parser.parse_args())
