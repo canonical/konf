@@ -2,9 +2,11 @@
 
 {% if "routes" in data %}
 {%- for route in data.routes %}
-  {%- with app_name=route.name, data=route %}
-    {%- include 'service.yaml' %}
-  {% endwith %}
+  {%- if route.service_name is not defined %}
+    {%- with app_name=route.name, data=route %}
+      {%- include 'service.yaml' %}
+    {% endwith %}
+  {% endif %}
 {% endfor %}
 {% endif %}
 
@@ -12,9 +14,11 @@
 
 {% if "routes" in data %}
 {%- for route in data.routes %}
-  {%- with app_name=route.name, data=route %}
-    {%- include 'deployment.yaml' %}
-  {% endwith %}
+  {%- if route.service_name is not defined %}
+    {%- with app_name=route.name, data=route %}
+      {%- include 'deployment.yaml' %}
+    {% endwith %}
+  {% endif %}
 {% endfor %}
 {% endif %}
 

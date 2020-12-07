@@ -63,7 +63,7 @@ spec:
       {%- for path in route.paths %}
       - path: {{ path }}
         backend:
-          serviceName: {{ route.name }}
+          serviceName: {{ route.get('service_name') or route.name }}
           servicePort: 80
       {% endfor %}
       {% endfor %}
