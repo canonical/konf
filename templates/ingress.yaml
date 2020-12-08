@@ -7,6 +7,7 @@ metadata:
   namespace: {{ namespace }}
   annotations:
     kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/use-regex: "true"
     {%- if "nginxConfigurationSnippet" in data %}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       {{ data.nginxConfigurationSnippet | indent(6) }}
