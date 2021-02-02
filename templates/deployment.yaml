@@ -83,3 +83,5 @@ spec:
           resources:
             limits:
               memory: {{ data.memoryLimit | default("256Mi") }}
+            requests:
+              memory: {{ data.memoryRequest | default("128Mi") }}
