@@ -26,6 +26,8 @@ parts:
   konf-python:
     source: .
     plugin: python
+    build-packages:
+      - gcc-multilib
 
 apps:
   konf:
