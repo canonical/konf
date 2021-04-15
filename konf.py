@@ -64,7 +64,14 @@ def is_apex_domain(context, s):
 
 class Konf:
     def __init__(
-        self, values_file, env, local_qa, docker_tag, database_url, overrides
+        self,
+        values_file,
+        env,
+        local_qa,
+        docker_tag,
+        database_url,
+        labels,
+        overrides,
     ):
         self.deployment_env = env
         self.values_file = values_file
@@ -72,6 +79,9 @@ class Konf:
         self.docker_tag = docker_tag
         self.database_url = database_url
         self.overrides = overrides
+        self.labels = {
+            key: value for key, value in (label.split("=") for label in labels)
+        }
 
         # Load project data
         self.load_values()
@@ -121,6 +131,7 @@ class Konf:
             domain=self.domain,
             tag=self.tag,
             data=self.values,
+            labels=self.labels,
             namespace=self.namespace,
             deployment_env=self.deployment_env,
         )
@@ -248,6 +259,14 @@ if __name__ == "__main__":
         nargs="+",
         default=[],
         dest="overrides",
+    )
+
+    parser.add_argument(
+        "-l",
+        type=str,
+        nargs="+",
+        default=[],
+        dest="labels",
     )
 
     args = vars(parser.parse_args())
