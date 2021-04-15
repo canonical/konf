@@ -19,6 +19,12 @@ metadata:
     {%- if data.nginxSSLRedirect is defined and not data.nginxSSLRedirect %}
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     {%- endif %}
+  labels:
+    app: {{ data.get('app_name') or domain }}
+    {%- for key, value in labels.items() %}
+    {{key}}: {{value}}
+    {%- endfor %}
+
 spec:
   {%- if data.noTls is not defined or not data.noTls %}
   tls:
