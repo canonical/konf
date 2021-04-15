@@ -6,9 +6,9 @@ metadata:
   name: {{ data.get('name') or get_site_name() }}
   namespace: {{ namespace }}
   labels:
-    app: {{ data.get('app_name') or domain }}
+    app: "{{ data.get('app_name') or domain }}"
     {%- for key, value in labels.items() %}
-    {{key}}: {{value}}
+    {{key}}: "{{value}}"
     {%- endfor %}
 spec:
   replicas: {{ data.replicas }}
