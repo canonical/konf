@@ -1,5 +1,5 @@
 name: konf
-base: core18
+base: core20
 
 version: git
 
@@ -31,6 +31,6 @@ parts:
 
 apps:
   konf:
-    command: konf.py
+    command: bin/konf.py
     plugs:
       - home
