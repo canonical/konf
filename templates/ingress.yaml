@@ -20,9 +20,9 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     {%- endif %}
   labels:
-    app: {{ data.get('app_name') or domain }}
+    app: "{{ data.get('app_name') or domain }}"
     {%- for key, value in labels.items() %}
-    {{key}}: {{value}}
+    {{key}}: "{{value}}"
     {%- endfor %}
 
 spec:
