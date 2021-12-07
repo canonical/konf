@@ -197,6 +197,10 @@ class KonfSite(Konf):
         # Set deployment environment namespace
         self.namespace = self.deployment_env
 
+        # Use staging overrides for demos
+        if self.deployment_env == "demo":
+            self.values.update(self.values.get("staging", {}))
+
         # QA overrides
         if self.local_qa or self.deployment_env == "demo":
             self.namespace = "default"
