@@ -12,7 +12,7 @@ TEMPLATES_DIR = BASE_DIR + "/templates"
 
 
 # Custom Jinja2 functions
-@jinja2.contextfunction
+@jinja2.pass_context
 def get_site_name(context, add_staging_prefix=False):
     """Return the metadata name to use for the K8s objects."""
     domain = context["domain"].split(".")
@@ -30,7 +30,7 @@ def get_site_name(context, add_staging_prefix=False):
     return "-".join(domain)
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 def get_environment_domain(context):
     """Return the environment domain."""
     domain = context["domain"]
@@ -45,7 +45,7 @@ def get_environment_domain(context):
     return domain
 
 
-@jinja2.contextfilter
+@jinja2.pass_context
 def add_environment_prefix(context, s):
     """Return the domain with the staging prefix if needed."""
     domain = s.split(".")
@@ -56,7 +56,7 @@ def add_environment_prefix(context, s):
     return ".".join(domain)
 
 
-@jinja2.contextfilter
+@jinja2.pass_context
 def is_apex_domain(context, s):
     """Check if the given string is an apex/base domain"""
     return s.count(".") == 1
