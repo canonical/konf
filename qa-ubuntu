@@ -105,7 +105,7 @@ function deploy_locally() {
     values_file="${2}"
 
     echo "Deploying project ${values_file}"
-    ./konf --local-qa ${environment} ${values_file} | microk8s.kubectl apply --filename -
+    konf --local-qa ${environment} ${values_file} | microk8s.kubectl apply --filename -
 }
 
 function run() {
@@ -143,7 +143,7 @@ function run() {
     echo "Done!"
     echo ""
     echo "Update /etc/hosts file:"
-    echo 'echo "127.0.0.1 mk8s.ubuntu.com" | sudo tee -a /etc/hosts  # Point ubuntu at microk8s'
+    echo 'echo "127.0.0.1 ubuntu.com" | sudo tee -a /etc/hosts'
 }
 
 run ${@}
