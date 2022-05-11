@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+
+# Bash strict mode
+set -eo pipefail
+
+USAGE="Usage
+===
+
+  $ ./ubuntu-qa (demo|production|staging) file init
+
+
+Description
+---
+Deploy Ubuntu website locally to microk8s.
+
+Use the 'init' flag for initialising the config
+"
+
+function invalid() {
+    message=${1}
+    echo "Error: ${message}"
+    echo ""
+    echo "$USAGE"
+    exit 1
+}
+
+function add_secrets() {
+    # Fake secret-keys key
+    if microk8s.kubectl get secret secret-keys &> /dev/null; then microk8s.kubectl delete secret secret-keys; fi
+    microk8s.kubectl create secret generic secret-keys --from-literal=ubuntu-com='notsosecret'
+
+    ip=""
+    while [[ -z "${ip}" ]]; do
+        echo "##############"
+        echo "Local IP for database access"
+        echo
+        echo -n "IP: "
+        read ip
+        echo -e "\n##############"
+    done
+
+    # Fake usn-db-url key
+    if microk8s.kubectl get secret usn-db-url &> /dev/null; then microk8s.kubectl delete secret usn-db-url; fi
+    microk8s.kubectl create secret generic usn-db-url --from-literal=database_url="postgres://postgres:pw@${ip}:5432/postgres"
+    
+    # Fake discourse-api key
+    if microk8s.kubectl get secret discourse-api &> /dev/null; then microk8s.kubectl delete secret discourse-api; fi
+    microk8s.kubectl create secret generic discourse-api --from-literal=ubuntu-api-key='notsosecret' --from-literal=ubuntu-api-username='nososecret'
+
+    # Fake launchpad-imagebuild key
+    if microk8s.kubectl get secret launchpad-imagebuild &> /dev/null; then microk8s.kubectl delete secret launchpad-imagebuild; fi
+    microk8s.kubectl create secret generic launchpad-imagebuild --from-literal=user='notsosecret' --from-literal=token='nososecret' --from-literal=secret='nososecret' --from-literal=auth-consumer='nososecret'
+    
+    # Fake google API key
+    if microk8s.kubectl get secret google-api &> /dev/null; then microk8s.kubectl delete secret google-api; fi
+    microk8s.kubectl create secret generic google-api --from-literal=google-custom-search-key='notsosecret'
+    
+    # Fake marketo key
+    if microk8s.kubectl get secret marketo &> /dev/null; then microk8s.kubectl delete secret marketo; fi
+    microk8s.kubectl create secret generic marketo --from-literal=api_client='notsosecret' --from-literal=api_secret='notsosecret'
+    
+    # Fake badgr key
+    if microk8s.kubectl get secret badgr &> /dev/null; then microk8s.kubectl delete secret badgr; fi
+    microk8s.kubectl create secret generic badgr --from-literal=user='notsosecret' --from-literal=qa-password='notsosecret' --from-literal=password='notsosecret'
+
+    # Fake cube-edx key
+    if microk8s.kubectl get secret cube-edx &> /dev/null; then microk8s.kubectl delete secret cube-edx; fi
+    microk8s.kubectl create secret generic cube-edx --from-literal=client-secret='notsosecret' --from-literal=qa-client-secret='notsosecret' --from-literal=client-id='notsosecret' --from-literal=qa-client-id='notsosecret'
+}
+
+function add_docker_credentials_microk8s() {
+    if ! microk8s.kubectl get secret registry-access &> /dev/null; then
+
+        username=""
+        password=""
+        while [[ -z "${username}" || -z "${password}" ]]; do
+            echo "##############"
+            echo "Docker registry credentials"
+            echo
+            echo -n "Username: "
+            read username
+            echo -n "Password: "
+            read -s password
+            echo -e "\n##############"
+        done
+
+        microk8s.kubectl create secret docker-registry registry-access --docker-server=prod-comms.docker-registry.canonical.com --docker-username="${username}" --docker-password="${password}" --docker-email=root@localhost
+
+        microk8s.kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "registry-access"}]}' --namespace default
+    fi
+}
+
+function apply_configuration() {
+    if ! microk8s.kubectl get configmap ubuntu-com &> /dev/null; then
+        microk8s.kubectl create configmap ubuntu-com --from-literal=maintenance=local;
+    fi
+}
+
+function enable_ingress() {
+    microk8s.enable ingress dns
+}
+
+function deploy_locally() {
+    environment="${1}"
+    values_file="${2}"
+
+    echo "Deploying project ${values_file}"
+    ./konf --local-qa ${environment} ${values_file} | microk8s.kubectl apply --filename -
+}
+
+function run() {
+    # Arguments
+    environment="$1"
+    values_file="$2"
+
+    # Mandatory arguments
+    if [ -z "${environment:-}" ]; then invalid "No environment specified (e.g. 'production')"; fi
+    if [ -z "${values_file:-}" ]; then invalid "No values file specified (e.g. 'konf/site.yaml')"; fi
+
+    # Validate arguments
+    if [[ ! "$environment" =~ ^(demo|production|staging)$ ]]; then
+        invalid "You need to specify a valid environment: 'demo', 'production' or 'staging'"
+    fi
+
+    if [[ ! -f $values_file ]] ; then
+        invalid "File '${values_file}' doesn't exits, aborting."
+    fi
+
+    echo "Make sure microk8s is running"
+    echo "Make sure the database container is running"
+    if [[ "$3" == "init" ]] ; then
+        echo "Apply configuration"
+        apply_configuration
+        echo "Enable services"
+        enable_ingress
+        echo "Add secrets"
+        add_secrets
+        echo "Add Docker credentials to microk8s"
+        add_docker_credentials_microk8s
+    fi
+    echo "Deploy locally ubunut-com"
+    deploy_locally "${environment}" "${values_file}"
+    echo "Done!"
+    echo ""
+    echo "Update /etc/hosts file:"
+    echo 'echo "127.0.0.1 mk8s.ubuntu.com" | sudo tee -a /etc/hosts  # Point ubuntu at microk8s'
+}
+
+run ${@}
