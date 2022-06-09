@@ -90,7 +90,7 @@ class Konf:
             # Replace database URL in main deployment and in routes
             def _replace_database_url(envs, database_url):
                 for index, env in enumerate(envs):
-                    if "DATABASE_URL" in env["name"]:
+                    if "DATABASE_URL" == env["name"]:
                         envs.pop(index)
                         break
                 envs.append({"name": "DATABASE_URL", "value": database_url})
