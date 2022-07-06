@@ -201,7 +201,20 @@ class KonfSite(Konf):
         self.domain = self.values["domain"]
 
         # Environment overrides
-        self.values.update(self.values.get(self.deployment_env, {}))
+        environment_config = self.values.get(self.deployment_env, {})
+
+        # Extend the env section instead of overriding it
+        if environment_config.get("env") and self.values.get("env"):
+            env_names = [e["name"] for e in environment_config["env"]]
+
+            # If the same value is defined in the general section and
+            # in the environment section, we discard the general one in
+            # favour of the environment (production,staging,demo) value
+            for item in self.values["env"]:
+                if item["name"] not in env_names:
+                    environment_config["env"].append(item)
+
+        self.values.update(environment_config)
 
         # Set deployment environment namespace
         self.namespace = self.deployment_env
