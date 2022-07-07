@@ -22,4 +22,8 @@
 {% endfor %}
 {% endif %}
 
-{% include 'ingress.yaml' %}
+{% if new_k8s_version %}
+  {% include 'ingress-new.yaml' %}
+{% else %}
+  {% include 'ingress.yaml' %}
+{% endif %}

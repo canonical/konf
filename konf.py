@@ -72,6 +72,7 @@ class Konf:
         database_url,
         labels,
         overrides,
+        new_k8s_version,
     ):
         self.deployment_env = env
         self.values_file = values_file
@@ -82,7 +83,7 @@ class Konf:
         self.labels = {
             key: value for key, value in (label.split("=") for label in labels)
         }
-
+        self.new_k8s_version = new_k8s_version
         # Load project data
         self.load_values()
 
@@ -134,6 +135,7 @@ class Konf:
             labels=self.labels,
             namespace=self.namespace,
             deployment_env=self.deployment_env,
+            new_k8s_version=self.new_k8s_version,
         )
 
 
@@ -168,6 +170,8 @@ class KonfCronJob(Konf):
             self.tag = self.docker_tag
 
     def render(self, template_file="cronjob.yaml"):
+        if self.new_k8s_version:
+            template_file = "cronjob-new.yaml"
         return super(KonfCronJob, self).render(template_file)
 
 
@@ -289,6 +293,14 @@ if __name__ == "__main__":
         nargs="+",
         default=[],
         dest="labels",
+    )
+
+    # TODO: make this the default behavior once we move away from k8s < v1.21
+    parser.add_argument(
+        "--new-version",
+        action="store_true",
+        default=False,
+        dest="new_k8s_version",
     )
 
     args = vars(parser.parse_args())
