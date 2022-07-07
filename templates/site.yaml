@@ -23,7 +23,7 @@
 {% endif %}
 
 {% if new_k8s_version %}
-  {% include 'ingress-new.yaml' %}
+{% include 'ingress-new.yaml' %}
 {% else %}
-  {% include 'ingress.yaml' %}
+{% include 'ingress.yaml' %}
 {% endif %}
