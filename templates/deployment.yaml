@@ -12,6 +12,19 @@ metadata:
     {%- endfor %}
 spec:
   replicas: {{ data.replicas }}
+
+  {% if data.replicas > 1 %}
+  {# This is to avoid issues with the podAntiAffinity rule in clusters with the
+  same amount of nodes as the replicas requested. This strategy will remove a
+  pod before creating the new one. However, we shouldn't use it when the number
+  of replicas is just one because it will cause downtime #}
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+  {% endif %}
+
   selector:
     matchLabels:
       app: {{ data.get('app_name') or domain }}
@@ -21,6 +34,7 @@ spec:
         app: {{ data.get('app_name') or domain }}
     spec:
       affinity:
+        {# This rule is to avoid having pods in the same node #}
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
