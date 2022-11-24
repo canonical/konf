@@ -20,16 +20,6 @@ spec:
       labels:
         app: {{ data.get('app_name') or domain }}
     spec:
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - {{ data.get('app_name') or domain }}
-            topologyKey: "kubernetes.io/hostname"
       containers:
         - name: {{ data.get('name') or get_site_name() }}
           image: {{ data.image }}:{{ tag | default("latest", true) }}
