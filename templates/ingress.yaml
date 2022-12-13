@@ -8,6 +8,9 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/use-regex: "true"
+    {%- if nginx_proxy_body_size %}
+    nginx.ingress.kubernetes.io/proxy-body-size: {{ nginx_proxy_body_size }}
+    {%- endif %}
     {%- if "nginxConfigurationSnippet" in data %}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       {{ data.nginxConfigurationSnippet | indent(6) }}

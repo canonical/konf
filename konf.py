@@ -6,7 +6,6 @@ import os
 import jinja2
 import yaml
 
-
 BASE_DIR = os.getenv("SNAP", ".")
 TEMPLATES_DIR = BASE_DIR + "/templates"
 
@@ -73,6 +72,7 @@ class Konf:
         labels,
         overrides,
         new_k8s_version,
+        nginx_proxy_body_size,
     ):
         self.deployment_env = env
         self.values_file = values_file
@@ -83,6 +83,7 @@ class Konf:
         self.labels = {
             key: value for key, value in (label.split("=") for label in labels)
         }
+        self.nginx_proxy_body_size = nginx_proxy_body_size
         self.new_k8s_version = new_k8s_version
         # Load project data
         self.load_values()
@@ -135,6 +136,7 @@ class Konf:
             labels=self.labels,
             namespace=self.namespace,
             deployment_env=self.deployment_env,
+            nginx_proxy_body_size=self.nginx_proxy_body_size,
             new_k8s_version=self.new_k8s_version,
         )
 
@@ -293,6 +295,13 @@ if __name__ == "__main__":
         nargs="+",
         default=[],
         dest="labels",
+    )
+
+    parser.add_argument(
+        "--nginx-proxy-body-size",
+        type=str,
+        nargs="?",
+        dest="nginx_proxy_body_size",
     )
 
     # TODO: make this the default behavior once we move away from k8s < v1.21
