@@ -19,7 +19,7 @@ Using the konf.py script, we generate the following Kubernetes objects:
 
 E.g.:
 ``` bash
-./konf.py staging konf/site.yaml
+./konf.py staging ../microcloud.is/konf/site.yaml
 ```
 
 ## Deploying
@@ -30,14 +30,14 @@ E.g. to deploy the snapcraft.io service to staging from scratch:
 
 ``` bash
 # E.g. To deploy the snapcraft.io services to staging
-./konf.py staging konf/site.yaml | kubectl apply --filename -
+./konf.py staging ../microcloud.is/konf/site.yaml | kubectl apply --filename -
 ```
 
 E.g. to deploy a specific docker image
 
 ``` bash
 # E.g. To deploy the snapcraft.io services to staging
-./konf.py staging konf/site.yaml --tag a264efb326485 | kubectl apply --filename -
+./konf.py staging ../microcloud.is/konf/site.yaml --tag a264efb326485 | kubectl apply --filename -
 ```
 
 ### To update an existing service
@@ -48,5 +48,5 @@ Or to update an existing snapcraft.io service without changing the deployed imag
 # E.g. for snapcraft.io
 TAG_TO_DEPLOY=$(kubectl get deployment snapcraft-io --namespace staging -o jsonpath="{.spec.template.spec.containers[*].image}" | grep -P -o '(?<=:)[^:]*$')
 
-./konf.py staging konf/site.yaml --tag $TAG_TO_DEPLOY | kubectl apply --filename -
+./konf.py staging ../microcloud.is/konf/site.yaml --tag $TAG_TO_DEPLOY | kubectl apply --filename -
 ```
