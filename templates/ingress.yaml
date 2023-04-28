@@ -10,6 +10,8 @@ metadata:
     nginx.ingress.kubernetes.io/use-regex: "true"
     {%- if nginx_proxy_body_size %}
     nginx.ingress.kubernetes.io/proxy-body-size: {{ nginx_proxy_body_size }}
+    {%- elif "nginx_proxy_body_size" in data %}
+    nginx.ingress.kubernetes.io/proxy-body-size: {{ data.nginx_proxy_body_size }}
     {%- endif %}
     {%- if "nginxConfigurationSnippet" in data %}
     nginx.ingress.kubernetes.io/configuration-snippet: |
