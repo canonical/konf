@@ -60,7 +60,7 @@ function add_docker_credentials_microk8s() {
             echo -e "\n##############"
         done
 
-        microk8s.kubectl create secret docker-registry registry-access --docker-server=prod-comms.docker-registry.canonical.com --docker-username="${username}" --docker-password="${password}" --docker-email=root@localhost
+        microk8s.kubectl create secret docker-registry registry-access --docker-server=prod-comms.ps5.docker-registry.canonical.com --docker-username="${username}" --docker-password="${password}" --docker-email=root@localhost
 
         microk8s.kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "registry-access"}]}' --namespace default
     fi
