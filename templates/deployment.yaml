@@ -49,12 +49,13 @@ spec:
               {%- if "value" in env %}
               value: "{{ env.value }}"
               {%- endif %}
-
-              {%- if "secretKeyRef" in env %}
+              {%- if "valueFrom" in env %}
               valueFrom:
+                {%- if "secretKeyRef" in env.valueFrom %}
                 secretKeyRef:
-                  key: {{ env.secretKeyRef.key }}
-                  name: {{ env.secretKeyRef.name }}
+                  key: {{ env.valueFrom.secretKeyRef.key }}
+                  name: {{ env.valueFrom.secretKeyRef.name }}
+                {%- endif %}
               {%- endif %}
 
               {%- if "configMapKeyRef" in env %}
