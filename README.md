@@ -12,15 +12,40 @@ We deploy our services into one of two namespaces:
 - `production`: Services for our production servers
 
 ### Template system
+
 All configurations for our projects can be found under the sites folder. Using the konf.py script, we generate the following Kubernetes objects:
+
 - service
 - deployment
 - ingress
 
 E.g.:
-``` bash
+
+```bash
 ./konf.py staging sites/canonical.com.yaml
 ```
+
+### Environment variables
+
+These are added in this format:
+
+```yaml
+env:
+  - name: API_KEY
+    value: someapikey
+```
+
+And for kubernetes secrets:
+
+```yaml
+env:
+  - name: API_KEY
+    secretKeyRef:
+      key: api-key
+      name: name-of-api-key
+```
+
+Note that there is no `valueFrom` key, as is the case in kubernetes deployment configuration.
 
 ## Deploying
 
@@ -36,20 +61,21 @@ For example:
 `./create-project new-site.com`
 
 Will create:
- - /sites/new-site.com.yaml
+
+- /sites/new-site.com.yaml
 
 ### To deploy a new service
 
 E.g. to deploy the snapcraft.io service to staging from scratch:
 
-``` bash
+```bash
 # E.g. To deploy the snapcraft.io services to staging
 ./konf.py staging sites/snapcraft.io.yaml | kubectl apply --filename -
 ```
 
 E.g. to deploy a specific docker image
 
-``` bash
+```bash
 # E.g. To deploy the snapcraft.io services to staging
 ./konf.py staging sites/snapcraft.io.yaml --tag a264efb326485 | kubectl apply --filename -
 ```
@@ -58,7 +84,7 @@ E.g. to deploy a specific docker image
 
 Or to update an existing snapcraft.io service without changing the deployed image:
 
-``` bash
+```bash
 # E.g. for snapcraft.io
 TAG_TO_DEPLOY=$(kubectl get deployment snapcraft-io --namespace staging -o jsonpath="{.spec.template.spec.containers[*].image}" | grep -P -o '(?<=:)[^:]*$')
 
