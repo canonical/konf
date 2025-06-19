@@ -81,4 +81,4 @@ spec:
               ephemeral-storage: {{ data.ephemeralStorageLimit | default("256Mi") }}
             requests:
               memory: {{ data.memoryRequest | default("128Mi") }}
-              ephemeral-storage: {{ data.ephemeralStorageLimit | default("128Mi") }}
+              ephemeral-storage: {{ data.ephemeralStorageRequest | default("128Mi") }}
