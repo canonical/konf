@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import contextlib
 import os
 
 import jinja2
@@ -98,9 +99,7 @@ class Konf:
                 envs.append({"name": "DATABASE_URL", "value": database_url})
 
             # Replace in top level "env" definition
-            _replace_database_url(
-                self.values.get("env", []), self.database_url
-            )
+            _replace_database_url(self.values.get("env", []), self.database_url)
 
             # Replace in routes "env" definitions
             if self.deployment_env in self.values:
@@ -226,18 +225,43 @@ class KonfSite(Konf):
         self.namespace = self.deployment_env
 
         # QA overrides
-        if self.local_qa or self.deployment_env == "demo":
+        if (
+            self.local_qa
+            or self.deployment_env == "demo"
+            or self.deployment_env == "staging"
+        ):
             self.namespace = "default"
             self.values["replicas"] = 1
 
             for route in self.values.get("routes", []):
                 route.update({"replicas": 1})
+                # hard upper memory limit for staging
+                limit = self.get_memory_value(route.get("memoryLimit"))
+                route.update({"memoryLimit": limit})
 
         if self.docker_tag:
             self.tag = self.docker_tag
 
     def render(self, template_file="site.yaml"):
         return super(KonfSite, self).render(template_file)
+
+    def get_memory_value(self, value):
+        """
+        Get the numeric value of a kubernetes formatted memory string, e.g
+        512Mi, 1Gi, and limit to 1Gi on staging.
+        """
+        limit = ""
+        with contextlib.suppress(ValueError):
+            limit, _ = value.get("memoryLimit").split("M")[0]
+            if int(limit) > 1000:
+                return "1000Mi"
+
+        with contextlib.suppress(ValueError):
+            limit, _ = value.get("memoryLimit").split("G")[0]
+            if int(limit) > 1:
+                return "1Gi"
+
+        return value
 
 
 if __name__ == "__main__":
