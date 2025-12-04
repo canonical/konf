@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import contextlib
 import os
 
 import jinja2
@@ -235,9 +234,13 @@ class KonfSite(Konf):
 
             for route in self.values.get("routes", []):
                 route.update({"replicas": 1})
-                # hard upper memory limit for staging
-                limit = self.get_memory_value(route.get("memoryLimit"))
-                route.update({"memoryLimit": limit})
+                # hard upper memory limit for staging/demo
+                # memoryLimit is always defined in Mi or Gi
+                memory_limit = self.get_memory_value(route.get("memoryLimit"))
+                request_limit = self.get_memory_value(route.get("memoryRequest"))
+                route.update(
+                    {"memoryLimit": memory_limit, "memoryRequest": request_limit}
+                )
 
         if self.docker_tag:
             self.tag = self.docker_tag
@@ -249,15 +252,19 @@ class KonfSite(Konf):
         """
         Get the numeric value of a kubernetes formatted memory string, e.g
         512Mi, 1Gi, and limit to 1Gi on staging.
-        """
-        limit = ""
-        with contextlib.suppress(ValueError):
-            limit, _ = value.get("memoryLimit").split("M")[0]
-            if int(limit) > 1000:
-                return "1000Mi"
 
-        with contextlib.suppress(ValueError):
-            limit, _ = value.get("memoryLimit").split("G")[0]
+        Default is 128Mi if no value is provided.
+        """
+        if not value:
+            return "128Mi"
+
+        if value.find("Mi") > 0:
+            limit = value.split("Mi")[0]
+            if int(limit) > 1000:
+                return "1Gi"
+
+        if value.find("Gi") > 0:
+            limit = value.split("Gi")[0]
             if int(limit) > 1:
                 return "1Gi"
 
