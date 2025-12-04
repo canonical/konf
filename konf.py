@@ -98,7 +98,9 @@ class Konf:
                 envs.append({"name": "DATABASE_URL", "value": database_url})
 
             # Replace in top level "env" definition
-            _replace_database_url(self.values.get("env", []), self.database_url)
+            _replace_database_url(
+                self.values.get("env", []), self.database_url
+            )
 
             # Replace in routes "env" definitions
             if self.deployment_env in self.values:
@@ -237,9 +239,14 @@ class KonfSite(Konf):
                 # hard upper memory limit for staging/demo
                 # memoryLimit is always defined in Mi or Gi
                 memory_limit = self.get_memory_value(route.get("memoryLimit"))
-                request_limit = self.get_memory_value(route.get("memoryRequest"))
+                request_limit = self.get_memory_value(
+                    route.get("memoryRequest")
+                )
                 route.update(
-                    {"memoryLimit": memory_limit, "memoryRequest": request_limit}
+                    {
+                        "memoryLimit": memory_limit,
+                        "memoryRequest": request_limit,
+                    }
                 )
 
         if self.docker_tag:
