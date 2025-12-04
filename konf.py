@@ -226,18 +226,56 @@ class KonfSite(Konf):
         self.namespace = self.deployment_env
 
         # QA overrides
-        if self.local_qa or self.deployment_env == "demo":
+        if (
+            self.local_qa
+            or self.deployment_env == "demo"
+            or self.deployment_env == "staging"
+        ):
             self.namespace = "default"
             self.values["replicas"] = 1
 
             for route in self.values.get("routes", []):
                 route.update({"replicas": 1})
+                # hard upper memory limit for staging/demo
+                # memoryLimit is always defined in Mi or Gi
+                memory_limit = self.get_memory_value(route.get("memoryLimit"))
+                request_limit = self.get_memory_value(
+                    route.get("memoryRequest")
+                )
+                route.update(
+                    {
+                        "memoryLimit": memory_limit,
+                        "memoryRequest": request_limit,
+                    }
+                )
 
         if self.docker_tag:
             self.tag = self.docker_tag
 
     def render(self, template_file="site.yaml"):
         return super(KonfSite, self).render(template_file)
+
+    def get_memory_value(self, value):
+        """
+        Get the numeric value of a kubernetes formatted memory string, e.g
+        512Mi, 1Gi, and limit to 1Gi on staging.
+
+        Default is 128Mi if no value is provided.
+        """
+        if not value:
+            return "128Mi"
+
+        if value.find("Mi") > 0:
+            limit = value.split("Mi")[0]
+            if int(limit) > 1000:
+                return "1Gi"
+
+        if value.find("Gi") > 0:
+            limit = value.split("Gi")[0]
+            if int(limit) > 1:
+                return "1Gi"
+
+        return value
 
 
 if __name__ == "__main__":
