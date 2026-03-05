@@ -234,6 +234,8 @@ class KonfSite(Konf):
             self.values["replicas"] = 1
 
             # FLASK_DEBUG is set to 1 for staging and demo environments
+            # to expose a human friendly stack trace in case of errors. 
+            # It is not set for production to avoid exposing sensitive information.
             envs = self.values.get("env", [])
             envs = [x for x in envs if x["name"] != "FLASK_DEBUG"]
             envs.append({"name": "FLASK_DEBUG", "value": "1"})
