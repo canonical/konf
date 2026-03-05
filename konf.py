@@ -196,6 +196,9 @@ class KonfSite(Konf):
             staging_values.pop("routes", None)
             staging_values.pop("nginxConfigurationSnippet", None)
             staging_values.pop("nginxServerSnippet", None)
+            env = self.values.get("env")
+            env.append({"name": "FLASK_DEBUG", "value": 1})
+
 
             self.values.update(staging_values)
 
