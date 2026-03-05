@@ -239,7 +239,6 @@ class KonfSite(Konf):
             envs.append({"name": "FLASK_DEBUG", "value": "1"})
             self.values["env"] = envs
 
-
             for route in self.values.get("routes", []):
                 route.update({"replicas": 1})
                 # hard upper memory limit for staging/demo
