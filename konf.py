@@ -196,10 +196,6 @@ class KonfSite(Konf):
             staging_values.pop("routes", None)
             staging_values.pop("nginxConfigurationSnippet", None)
             staging_values.pop("nginxServerSnippet", None)
-            env = self.values.get("env")
-            env.append({"name": "FLASK_DEBUG", "value": 1})
-
-
             self.values.update(staging_values)
 
         for override in self.overrides:
@@ -236,6 +232,13 @@ class KonfSite(Konf):
         ):
             self.namespace = "default"
             self.values["replicas"] = 1
+
+            # FLASK_DEBUG is set to 1 for staging and demo environments
+            envs = self.values.get("env", [])
+            envs = [x for x in envs if x["name"] != "FLASK_DEBUG"]
+            envs.append({"name": "FLASK_DEBUG", "value": "1"})
+            self.values["env"] = envs
+
 
             for route in self.values.get("routes", []):
                 route.update({"replicas": 1})
