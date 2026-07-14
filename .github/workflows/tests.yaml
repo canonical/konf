@@ -9,14 +9,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Install Snapcraft
-        run: sudo snap install snapcraft --classic
-
       - name: Build Konf snap
-        run: snapcraft pack --destructive-mode
+        uses: snapcore/action-build@v1
+        id: build
 
       - name: Install konf snap
-        run: sudo snap install --dangerous konf_*.snap
+        run: sudo snap install --dangerous ${{ steps.build.outputs.snap }}
 
       - uses: actions/upload-artifact@v4
         with:
