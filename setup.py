@@ -7,5 +7,6 @@ setup(
     name="konf",
     version="1.0.0",
     install_requires=requirements,
+    py_modules=["konf"],
     scripts=["konf.py"],
 )

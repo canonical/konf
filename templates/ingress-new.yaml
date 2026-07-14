@@ -11,6 +11,9 @@ metadata:
     {%- if nginx_proxy_body_size %}
     nginx.ingress.kubernetes.io/proxy-body-size: {{ nginx_proxy_body_size }}
     {%- endif %}
+    {%- if "nginxProxyBufferSize" in data %}
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "{{ data.nginxProxyBufferSize }}"
+    {%- endif %}
     {%- if "nginxConfigurationSnippet" in data %}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       {{ data.nginxConfigurationSnippet | indent(6) }}

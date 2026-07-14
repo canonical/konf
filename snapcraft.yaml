@@ -1,5 +1,5 @@
 name: konf
-base: core20
+base: core22
 
 version: git
 
@@ -13,7 +13,6 @@ confinement: strict
 
 architectures:
   - build-on: amd64
-    run-on: amd64
 
 parts:
   konf-templates:
