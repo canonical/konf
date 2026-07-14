@@ -13,7 +13,7 @@ jobs:
         run: sudo snap install snapcraft --classic
 
       - name: Build Konf snap
-        run: /snap/bin/snapcraft --destructive-mode
+        run: snapcraft pack --destructive-mode
 
       - name: Install konf snap
         run: sudo snap install --dangerous konf_*.snap
