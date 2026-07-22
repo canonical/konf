@@ -224,13 +224,20 @@ class KonfSite(Konf):
         # Set deployment environment namespace
         self.namespace = self.deployment_env
 
-        # QA overrides
+        # Demos and local QA deploy into the shared default namespace.
+        # Staging keeps its own namespace — it must NOT be added here
+        # (doing so relocates every site's staging stack; see #54).
+        if self.local_qa or self.deployment_env == "demo":
+            self.namespace = "default"
+
+        # Resource limits for non-production environments (WD-31862):
+        # single replica and memory caps to avoid over-utilising PS5
+        # resources shared with production.
         if (
             self.local_qa
             or self.deployment_env == "demo"
             or self.deployment_env == "staging"
         ):
-            self.namespace = "default"
             self.values["replicas"] = 1
 
             # FLASK_DEBUG is set to 1 for staging and demo environments
