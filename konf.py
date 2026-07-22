@@ -224,21 +224,22 @@ class KonfSite(Konf):
         # Set deployment environment namespace
         self.namespace = self.deployment_env
 
-        # QA overrides: single replica in the default namespace.
-        # Applies to demos and local QA only — staging keeps its own
-        # namespace and site.yaml replica counts.
+        # Demos and local QA deploy into the shared default namespace.
+        # Staging keeps its own namespace — it must NOT be added here
+        # (doing so relocates every site's staging stack; see #54).
         if self.local_qa or self.deployment_env == "demo":
             self.namespace = "default"
-            self.values["replicas"] = 1
 
-            for route in self.values.get("routes", []):
-                route.update({"replicas": 1})
-
+        # Resource limits for non-production environments (WD-31862):
+        # single replica and memory caps to avoid over-utilising PS5
+        # resources shared with production.
         if (
             self.local_qa
             or self.deployment_env == "demo"
             or self.deployment_env == "staging"
         ):
+            self.values["replicas"] = 1
+
             # FLASK_DEBUG is set to 1 for staging and demo environments
             # to expose a human friendly stack trace in case of errors.
             # It is not set for production to avoid exposing sensitive info.
@@ -248,6 +249,7 @@ class KonfSite(Konf):
             self.values["env"] = envs
 
             for route in self.values.get("routes", []):
+                route.update({"replicas": 1})
                 # hard upper memory limit for staging/demo
                 # memoryLimit is always defined in Mi or Gi
                 memory_limit = self.get_memory_value(route.get("memoryLimit"))
